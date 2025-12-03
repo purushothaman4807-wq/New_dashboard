@@ -121,14 +121,14 @@ def safe_latest(df, fmt="0.2f"):
         return "N/A"
 
 # ------------------------------------------------------------
-# LIGHT THEME GLOBAL STYLES (Reverted)
+# LIGHT THEME GLOBAL STYLES (RBI-inspired colors)
 # ------------------------------------------------------------
-PRIMARY = "#0B63A8" # Dark blue accent color
+PRIMARY = "#004D99" # Deep RBI Blue for accents/titles
 ACCENT = "#0b84a5"
-BG = "#f7fbff" # Light Streamlit background color
+BG = "#F7F8F4" # Soft Cream Background
 CARD_BG = "white"
-CARD_TEXT = "#0f172a" # Dark text for visibility
-CARD_SUBTITLE = "#475569" # Gray text
+CARD_TEXT = "#1A1A1A" # Near Black text for visibility
+CARD_SUBTITLE = "#545454" # Dark Gray text
 CARD_SHADOW = "0 2px 10px rgba(12, 36, 60, 0.06)" # Light subtle shadow
 PLOTLY_THEME = "plotly_white" # Light theme for Plotly charts
 
@@ -169,6 +169,8 @@ st.markdown(f"""
     
     /* H tags inside tabs for consistency */
     h1, h2, h3, h4 {{ color: {CARD_TEXT}; }}
+    /* Metric value color to ensure visibility */
+    [data-testid="stMetricValue"] {{ color: {CARD_TEXT}; }}
 </style>
 """, unsafe_allow_html=True)
 
@@ -507,14 +509,14 @@ with tabs[6]:
 # -------------------------------------------------------------------
 with tabs[7]:
     # Hardcode the light theme variables for the scoped container look
-    PRO_TEXT_COLOR = "#0f172a"
+    PRO_TEXT_COLOR = CARD_TEXT # Use main text color
     PRO_CARD_BG = "rgba(255,255,255,0.92)" # Near opaque white on light background
 
     # We'll scope the Pro CSS inside a container div with id
     st.markdown("<div id='pro-container'>", unsafe_allow_html=True)
     
     # Top row: title
-    st.markdown("<h2 style='margin:0; padding:0; color:#0B63A8;'>🏦 Pro Visuals — 3D Charts (Light Theme)</h2>", unsafe_allow_html=True)
+    st.markdown(f"<h2 style='margin:0; padding:0; color:{PRIMARY};'>🏦 Pro Visuals — 3D Charts (Light Theme)</h2>", unsafe_allow_html=True)
 
     # Scoped Pro CSS (only styles inside #pro-container)
     pro_css = f"""
@@ -534,7 +536,7 @@ with tabs[7]:
         border: 1px solid rgba(0,0,0,0.08); /* Darker border for contrast */
     }}
     #pro-container .pro-title {{
-        color: #0B63A8;
+        color: {PRIMARY};
         font-weight:600;
         font-size:18px;
     }}
