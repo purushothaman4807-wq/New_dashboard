@@ -115,8 +115,9 @@ def zip_datasets(dict_of_dfs):
 # A safe formatting helper
 def safe_latest(df, fmt="0.2f"):
     try:
-        return f"{df['value'].iloc[-1]:{fmt}}"<
-    except Exception:<
+        # Corrected line: Removed the extra '<' character
+        return f"{df['value'].iloc[-1]:{fmt}}"
+    except Exception:
         return "N/A"
 
 # ------------------------------------------------------------
@@ -615,7 +616,7 @@ with tabs[7]:
                                   on="date", how="inner")
         fig_ts = go.Figure()
         fig_ts.add_trace(go.Scatter(x=merged_monthly["date"], y=merged_monthly["liquidity"], mode="lines", name="Liquidity", line=dict(width=2)))
-        fig_ts.add_trace(go.Scatter(x=merged_monthly["date"], y=merged_monthly["inflation"], mode="lines", name="Inflation", line=dict(width=2, dash="dash")))<
+        fig_ts.add_trace(go.Scatter(x=merged_monthly["date"], y=merged_monthly["inflation"], mode="lines", name="Inflation", line=dict(width=2, dash="dash")))
         fig_ts.update_layout(height=360, margin=dict(l=10, r=10, t=30, b=10), template=PLOTLY_THEME, paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
         st.plotly_chart(fig_ts, use_container_width=True)
         st.markdown("</div>", unsafe_allow_html=True)
