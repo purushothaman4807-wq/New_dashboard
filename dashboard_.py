@@ -64,9 +64,13 @@ def fetch_usdinr():
         r = requests.get("https://api.exchangerate.host/latest?base=USD&symbols=INR", timeout=10)
         r.raise_for_status()
         rate = r.json().get("rates", {}).get("INR", None)
-        return rate
+        # Return rate and status (True for live)
+        return rate, True
     except Exception:
-        return None
+        # Fallback value when API fails
+        fallback_rate = 82.50
+        # Return fallback rate and status (False for fallback)
+        return fallback_rate, False
 
 def linear_forecast(df, periods=12, freq='M'):
     """
@@ -203,7 +207,7 @@ with tabs[0]:
     us_cpi = get_fred("CPIAUCSL")
     fed_bs = get_fred("WALCL")
     ind_cpi_data = india_cpi()
-    usd_inr_rate = fetch_usdinr()
+    usd_inr_rate, is_live = fetch_usdinr() # Updated to unpack rate and status
 
     with col1:
         st.metric("US CPI (latest)", f"{us_cpi['value'].iloc[-1]:.2f}" if not us_cpi.empty else "N/A")
@@ -215,8 +219,16 @@ with tabs[0]:
         st.metric("Fed Balance Sheet (WALCL)", f"{fed_bs['value'].iloc[-1]:,.0f}" if not fed_bs.empty else "N/A")
 
     with col4:
-        # Formatting adjusted to ensure readability even if the rate is None
-        st.metric("USD → INR (spot)", f"{usd_inr_rate:.4f}" if usd_inr_rate else "N/A")
+        # Display the rate and append "(FALLBACK)" if it's not live
+        title = "USD → INR (spot)"
+        if usd_inr_rate and not is_live:
+            title += " (FALLBACK)"
+            st.metric(title, f"{usd_inr_rate:.4f}", delta="API Down", delta_color="off")
+        elif usd_inr_rate:
+            st.metric(title, f"{usd_inr_rate:.4f}")
+        else:
+            st.metric(title, "N/A")
+
 
     st.markdown("</div>", unsafe_allow_html=True)
 
@@ -481,7 +493,7 @@ with tabs[6]:
     us_df = us_cpi
     fed_df = fed_bs
     ind_df = ind_cpi_data
-    usd_inr = fetch_usdinr()
+    usd_inr, is_live = fetch_usdinr()
 
     # Build summary lines
     lines = []
@@ -500,7 +512,12 @@ with tabs[6]:
         lines.append(f"- Latest Fed Balance Sheet (WALCL): {fed_df['value'].iloc[-1]:,.0f}")
     else:
         lines.append("- Latest Fed Balance Sheet: not available")
-    lines.append(f"- USD → INR (spot): {usd_inr:.4f}" if usd_inr else "- USD → INR: not available")
+    
+    inr_status = ""
+    if usd_inr:
+        inr_status = " (LIVE)" if is_live else " (FALLBACK - API Error)"
+    
+    lines.append(f"- USD → INR (spot): {usd_inr:.4f}{inr_status}" if usd_inr else "- USD → INR: not available")
 
     st.download_button("Download Summary Report", "\n".join(lines).encode(), "dashboard_summary.txt")
 
