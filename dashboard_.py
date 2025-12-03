@@ -11,7 +11,7 @@ import zipfile
 # ------------------------------------------------------------
 # PAGE CONFIG (single)
 # ------------------------------------------------------------
-st.set_page_config(page_title="RBI Macro Dashboard v2.0 — Dark Mode", layout="wide",
+st.set_page_config(page_title="RBI Macro Dashboard v2.0 — Light Mode", layout="wide",
                    page_icon="🏦", initial_sidebar_state="collapsed")
 
 # ------------------------------------------------------------
@@ -121,15 +121,16 @@ def safe_latest(df, fmt="0.2f"):
         return "N/A"
 
 # ------------------------------------------------------------
-# DARK THEME GLOBAL STYLES
+# LIGHT THEME GLOBAL STYLES (Reverted)
 # ------------------------------------------------------------
-PRIMARY = "#4793ff" # Light blue accent color for dark mode
+PRIMARY = "#0B63A8" # Dark blue accent color
 ACCENT = "#0b84a5"
-BG = "#0E1117" # Streamlit dark background color
-CARD_BG = "#1F232B"
-CARD_TEXT = "#e6edf3"
-CARD_SUBTITLE = "#94a3b8"
-CARD_SHADOW = "0 4px 12px rgba(0, 0, 0, 0.4)" # Subtle shadow for dark mode
+BG = "#f7fbff" # Light Streamlit background color
+CARD_BG = "white"
+CARD_TEXT = "#0f172a" # Dark text for visibility
+CARD_SUBTITLE = "#475569" # Gray text
+CARD_SHADOW = "0 2px 10px rgba(12, 36, 60, 0.06)" # Light subtle shadow
+PLOTLY_THEME = "plotly_white" # Light theme for Plotly charts
 
 st.markdown(f"""
 <style>
@@ -157,9 +158,9 @@ st.markdown(f"""
         border-radius:12px;
         padding: 14px;
         box-shadow: {CARD_SHADOW};
-        border: 1px solid rgba(255, 255, 255, 0.05); /* subtle border */
+        border: 1px solid rgba(0, 0, 0, 0.05); /* subtle light border */
     }}
-    /* Metric label color fix for dark mode (makes the title of the metric readable) */
+    /* Metric label color fix for light mode */
     [data-testid="stMetricLabel"] {{ color: {CARD_SUBTITLE} !important; }}
     
     /* Plotly and DataFrame background adjustments for transparency */
@@ -212,7 +213,8 @@ with tabs[0]:
         st.metric("Fed Balance Sheet (WALCL)", f"{fed_bs['value'].iloc[-1]:,.0f}" if not fed_bs.empty else "N/A")
 
     with col4:
-        st.metric("USD → INR (spot)", f"{usd_inr_rate:.2f}" if usd_inr_rate else "N/A")
+        # Formatting adjusted to ensure readability even if the rate is None
+        st.metric("USD → INR (spot)", f"{usd_inr_rate:.4f}" if usd_inr_rate else "N/A")
 
     st.markdown("</div>", unsafe_allow_html=True)
 
@@ -228,9 +230,6 @@ with tabs[0]:
 with tabs[1]:
     st.header("📌 Inflation: US & India")
     col_us, col_ind = st.columns(2)
-
-    # Plotly default theme set to 'plotly_dark' for better dark mode integration
-    PLOTLY_THEME = "plotly_dark"
 
     with col_us:
         st.subheader("🇺🇸 US CPI (CPIAUCSL)")
@@ -305,7 +304,7 @@ with tabs[2]:
                         st.error("After parsing, no valid date/value rows found.")
                     else:
                         uploaded_df = df.copy()
-                        # Use a dark theme compatible chart
+                        # Use a light theme compatible chart
                         fig_uploaded = px.line(df, x="date", y="value", template=PLOTLY_THEME)
                         st.plotly_chart(fig_uploaded, use_container_width=True)
 
@@ -350,7 +349,7 @@ with tabs[3]:
         # compute risk score
         risk_score = eq * 0.7 + gold * 0.2 + debt * 0.1
         
-        # Use a dark-mode friendly gauge
+        # Use a light-mode friendly gauge
         fig = go.Figure(go.Indicator(
             mode="gauge+number",
             value=risk_score,
@@ -358,15 +357,15 @@ with tabs[3]:
             gauge={
                 "axis": {"range": [0, 100]},
                 "steps": [
-                    {"range": [0, 30], "color": "darkgreen"},
-                    {"range": [30, 60], "color": "orange"},
+                    {"range": [0, 30], "color": "lightgreen"},
+                    {"range": [30, 60], "color": "yellow"},
                     {"range": [60, 100], "color": "red"}
                 ],
                 "bar": {"color": PRIMARY},
-                "threshold": {"value": risk_score, "line": {"color": "white", "width": 4}}
+                "threshold": {"value": risk_score, "line": {"color": "red", "width": 4}}
             }
         ))
-        # Ensure Plotly layout respects dark theme background
+        # Ensure Plotly layout respects light theme background
         fig.update_layout(template=PLOTLY_THEME, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
         
         st.plotly_chart(fig, use_container_width=True)
@@ -499,23 +498,23 @@ with tabs[6]:
         lines.append(f"- Latest Fed Balance Sheet (WALCL): {fed_df['value'].iloc[-1]:,.0f}")
     else:
         lines.append("- Latest Fed Balance Sheet: not available")
-    lines.append(f"- USD → INR (spot): {usd_inr:.2f}" if usd_inr else "- USD → INR: not available")
+    lines.append(f"- USD → INR (spot): {usd_inr:.4f}" if usd_inr else "- USD → INR: not available")
 
     st.download_button("Download Summary Report", "\n".join(lines).encode(), "dashboard_summary.txt")
 
 # -------------------------------------------------------------------
-# ------------------ PRO VISUALS TAB (3D + Dark Styling) ------------
+# ------------------ PRO VISUALS TAB (3D + Light Styling) ------------
 # -------------------------------------------------------------------
 with tabs[7]:
-    # Hardcode the dark theme variables for the scoped container look
-    PRO_TEXT_COLOR = "#e6edf3"
-    PRO_CARD_BG = "rgba(255,255,255,0.03)" # Semi-transparent light on dark background
+    # Hardcode the light theme variables for the scoped container look
+    PRO_TEXT_COLOR = "#0f172a"
+    PRO_CARD_BG = "rgba(255,255,255,0.92)" # Near opaque white on light background
 
     # We'll scope the Pro CSS inside a container div with id
     st.markdown("<div id='pro-container'>", unsafe_allow_html=True)
     
     # Top row: title
-    st.markdown("<h2 style='margin:0; padding:0; color:#4793ff;'>🏦 Pro Visuals — 3D Charts (Dark Theme)</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 style='margin:0; padding:0; color:#0B63A8;'>🏦 Pro Visuals — 3D Charts (Light Theme)</h2>", unsafe_allow_html=True)
 
     # Scoped Pro CSS (only styles inside #pro-container)
     pro_css = f"""
@@ -532,10 +531,10 @@ with tabs[7]:
         border-radius: 12px;
         display:flex; justify-content:space-between; align-items:center;
         margin-bottom:12px;
-        border: 1px solid rgba(255,255,255,0.04);
+        border: 1px solid rgba(0,0,0,0.08); /* Darker border for contrast */
     }}
     #pro-container .pro-title {{
-        color: #60a5fa;
+        color: #0B63A8;
         font-weight:600;
         font-size:18px;
     }}
@@ -543,12 +542,12 @@ with tabs[7]:
         background: {PRO_CARD_BG};
         border-radius:12px;
         padding:14px;
-        border: 1px solid rgba(255,255,255,0.03);
+        border: 1px solid rgba(0,0,0,0.08);
         margin-bottom:12px;
     }}
     #pro-container h3 {{ color: {PRO_TEXT_COLOR}; }}
     /* data table style for the pro container */
-    #pro-container .stDataFrame table {{ background-color: rgba(255,255,255,0.02) !important; }}
+    #pro-container .stDataFrame table {{ background-color: {PRO_CARD_BG} !important; }}
     </style>
     """
     st.markdown(pro_css, unsafe_allow_html=True)
@@ -556,8 +555,8 @@ with tabs[7]:
     # Pro navbar (visual only inside the tab)
     navbar_html = f"""
     <div class="pro-navbar">
-      <div class="pro-title">Pro Visuals • Theme: Dark Mode</div>
-      <div style="color: {PRO_TEXT_COLOR}; font-size:13px;">3D scatter • 3D surface • Export</div>
+      <div class="pro-title">Pro Visuals • Theme: Light Mode</div>
+      <div style="color: {CARD_SUBTITLE}; font-size:13px;">3D scatter • 3D surface • Export</div>
     </div>
     """
     st.markdown(navbar_html, unsafe_allow_html=True)
@@ -713,11 +712,3 @@ with tabs[7]:
 
     # close pro container
     st.markdown("</div>", unsafe_allow_html=True)
-
-# ------------------------------------------------------------
-# Footer common to app
-# ------------------------------------------------------------
-st.markdown(
-    "<p style='text-align:center; color:#94a3b8; margin-top:30px;'>Made with ❤️ — RBI Macro Dashboard v2.0 • Dark Mode Enabled</p>",
-    unsafe_allow_html=True
-)
