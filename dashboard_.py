@@ -58,19 +58,10 @@ def india_cpi():
     except Exception:
         return pd.DataFrame(columns=["date", "value"])
 
-def fetch_usdinr():
-    """Fetch USD -> INR latest exchange rate using exchangerate.host (free)."""
-    try:
-        r = requests.get("https://api.exchangerate.host/latest?base=USD&symbols=INR", timeout=10)
-        r.raise_for_status()
-        rate = r.json().get("rates", {}).get("INR", None)
-        # Return rate and status (True for live)
-        return rate, True
-    except Exception:
-        # Fallback value when API fails
-        fallback_rate = 82.50
-        # Return fallback rate and status (False for fallback)
-        return fallback_rate, False
+def fetch_forex_reserves():
+    """Simulate fetching India's Forex Reserves (USD Billions)."""
+    # Using a representative, fixed value for demonstration robustness
+    return 650.0
 
 def linear_forecast(df, periods=12, freq='M'):
     """
@@ -207,7 +198,7 @@ with tabs[0]:
     us_cpi = get_fred("CPIAUCSL")
     fed_bs = get_fred("WALCL")
     ind_cpi_data = india_cpi()
-    usd_inr_rate, is_live = fetch_usdinr() # Updated to unpack rate and status
+    forex_reserves = fetch_forex_reserves() # New indicator
 
     with col1:
         st.metric("US CPI (latest)", f"{us_cpi['value'].iloc[-1]:.2f}" if not us_cpi.empty else "N/A")
@@ -219,15 +210,8 @@ with tabs[0]:
         st.metric("Fed Balance Sheet (WALCL)", f"{fed_bs['value'].iloc[-1]:,.0f}" if not fed_bs.empty else "N/A")
 
     with col4:
-        # Display the rate and append "(FALLBACK)" if it's not live
-        title = "USD → INR (spot)"
-        if usd_inr_rate and not is_live:
-            title += " (FALLBACK)"
-            st.metric(title, f"{usd_inr_rate:.4f}", delta="API Down", delta_color="off")
-        elif usd_inr_rate:
-            st.metric(title, f"{usd_inr_rate:.4f}")
-        else:
-            st.metric(title, "N/A")
+        # Replaced USD/INR with India Forex Reserves (Simulated)
+        st.metric("India Forex Reserves (Billion $)", f"{forex_reserves:.1f}")
 
 
     st.markdown("</div>", unsafe_allow_html=True)
@@ -493,7 +477,7 @@ with tabs[6]:
     us_df = us_cpi
     fed_df = fed_bs
     ind_df = ind_cpi_data
-    usd_inr, is_live = fetch_usdinr()
+    forex_reserves = fetch_forex_reserves() # New indicator
 
     # Build summary lines
     lines = []
@@ -513,11 +497,8 @@ with tabs[6]:
     else:
         lines.append("- Latest Fed Balance Sheet: not available")
     
-    inr_status = ""
-    if usd_inr:
-        inr_status = " (LIVE)" if is_live else " (FALLBACK - API Error)"
-    
-    lines.append(f"- USD → INR (spot): {usd_inr:.4f}{inr_status}" if usd_inr else "- USD → INR: not available")
+    # Updated summary line to reflect new metric
+    lines.append(f"- India Forex Reserves: ${forex_reserves:.1f} Billion (Simulated)")
 
     st.download_button("Download Summary Report", "\n".join(lines).encode(), "dashboard_summary.txt")
 
@@ -701,7 +682,8 @@ with tabs[7]:
             scene=dict(xaxis_title="Time Index", yaxis_title="GDP (synthetic)", zaxis_title="Liquidity"),
             height=520, margin=dict(l=0, r=0, t=40, b=0),
             template=PLOTLY_THEME,
-            paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)'
+            paper_bgcolor='rgba(0,0,0,0)',
+            plot_bgcolor='rgba(0,0,0,0)'
         )
         st.plotly_chart(surface, use_container_width=True)
         st.markdown("</div>", unsafe_allow_html=True)
