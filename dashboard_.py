@@ -121,11 +121,11 @@ def safe_latest(df, fmt="0.2f"):
         return "N/A"
 
 # ------------------------------------------------------------
-# LIGHT THEME GLOBAL STYLES (RBI-inspired colors)
+# LIGHT THEME GLOBAL STYLES (RBI-inspired colors - Soft Blue BG)
 # ------------------------------------------------------------
 PRIMARY = "#004D99" # Deep RBI Blue for accents/titles
 ACCENT = "#0b84a5"
-BG = "#F7F8F4" # Soft Cream Background
+BG = "#EBF5FF" # Soft Light Blue Background (New)
 CARD_BG = "white"
 CARD_TEXT = "#1A1A1A" # Near Black text for visibility
 CARD_SUBTITLE = "#545454" # Dark Gray text
