@@ -1,4 +1,3 @@
-# app.py (Merged: RBI Macro Dashboard v2.0 + Pro Visuals (3D + Theme Toggle Buttons))
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -12,7 +11,7 @@ import zipfile
 # ------------------------------------------------------------
 # PAGE CONFIG (single)
 # ------------------------------------------------------------
-st.set_page_config(page_title="RBI Macro Dashboard v2.0 — Pro", layout="wide",
+st.set_page_config(page_title="RBI Macro Dashboard v2.0 — Dark Mode", layout="wide",
                    page_icon="🏦", initial_sidebar_state="collapsed")
 
 # ------------------------------------------------------------
@@ -116,38 +115,58 @@ def zip_datasets(dict_of_dfs):
 # A safe formatting helper
 def safe_latest(df, fmt="0.2f"):
     try:
-        return f"{df['value'].iloc[-1]:{fmt}}"
-    except Exception:
+        return f"{df['value'].iloc[-1]:{fmt}}"<
+    except Exception:<
         return "N/A"
 
 # ------------------------------------------------------------
-# Top header + styles for the main v2.0 (light-blue header preserved)
+# DARK THEME GLOBAL STYLES
 # ------------------------------------------------------------
-PRIMARY = "#0B63A8"
+PRIMARY = "#4793ff" # Light blue accent color for dark mode
 ACCENT = "#0b84a5"
-BG = "#f7fbff"
+BG = "#0E1117" # Streamlit dark background color
+CARD_BG = "#1F232B"
+CARD_TEXT = "#e6edf3"
+CARD_SUBTITLE = "#94a3b8"
+CARD_SHADOW = "0 4px 12px rgba(0, 0, 0, 0.4)" # Subtle shadow for dark mode
 
 st.markdown(f"""
 <style>
-    .stApp {{ background: {BG}; }}
+    /* Global App Background and Text Color */
+    .stApp {{ background: {BG}; color: {CARD_TEXT}; }}
+    
     header .decoration {{ display: none; }}
+    
+    /* Main Title Styling */
     .big-title {{
         font-size:28px;
         font-weight:700;
         color: {PRIMARY};
         margin-bottom: 0px;
     }}
+    /* Subtitle Styling */
     .subtitle {{
-        color: #475569;
+        color: {CARD_SUBTITLE};
         margin-top: 0px;
         margin-bottom: 12px;
     }}
+    /* Card/Container Styling */
     .card {{
-        background: white;
+        background: {CARD_BG};
         border-radius:12px;
         padding: 14px;
-        box-shadow: 0 2px 10px rgba(12, 36, 60, 0.06);
+        box-shadow: {CARD_SHADOW};
+        border: 1px solid rgba(255, 255, 255, 0.05); /* subtle border */
     }}
+    /* Metric label color fix for dark mode (makes the title of the metric readable) */
+    [data-testid="stMetricLabel"] {{ color: {CARD_SUBTITLE} !important; }}
+    
+    /* Plotly and DataFrame background adjustments for transparency */
+    .js-plotly-plot .plotly .main-svg {{ background-color: transparent !important; }}
+    .stDataFrame table {{ background-color: {CARD_BG} !important; }}
+    
+    /* H tags inside tabs for consistency */
+    h1, h2, h3, h4 {{ color: {CARD_TEXT}; }}
 </style>
 """, unsafe_allow_html=True)
 
@@ -165,7 +184,7 @@ tabs = st.tabs([
     "Correlations & Forecasts",
     "Yield Curve & Policy",
     "Export / Report",
-    "Pro Visuals (3D + Theme)"
+    "Pro Visuals (3D)"
 ])
 
 # -------------------------------------------------------------------
@@ -209,19 +228,22 @@ with tabs[1]:
     st.header("📌 Inflation: US & India")
     col_us, col_ind = st.columns(2)
 
+    # Plotly default theme set to 'plotly_dark' for better dark mode integration
+    PLOTLY_THEME = "plotly_dark"
+
     with col_us:
         st.subheader("🇺🇸 US CPI (CPIAUCSL)")
         us_df = us_cpi
         if us_df.empty:
             st.info("US CPI not available (FRED key missing or API error). Set `fred_api_key` in Streamlit secrets to enable.")
         else:
-            fig_us = px.line(us_df, x="date", y="value", title="US CPI (CPIAUCSL)", labels={"value":"CPI"})
+            fig_us = px.line(us_df, x="date", y="value", title="US CPI (CPIAUCSL)", labels={"value":"CPI"}, template=PLOTLY_THEME)
             fig_us.update_xaxes(rangeslider_visible=True)
             st.plotly_chart(fig_us, use_container_width=True)
             # forecast
             us_proj = linear_forecast(us_df, periods=12, freq='M')
             fig_proj = px.line(us_proj, x="date", y="value", color="is_forecast",
-                               labels={"value":"CPI", "is_forecast":"Forecast (True)"}, title="US CPI + linear forecast (12 months)")
+                               labels={"value":"CPI", "is_forecast":"Forecast (True)"}, title="US CPI + linear forecast (12 months)", template=PLOTLY_THEME)
             fig_proj.update_layout(legend=dict(title="Series"))
             st.plotly_chart(fig_proj, use_container_width=True)
 
@@ -231,11 +253,11 @@ with tabs[1]:
         if ind_df.empty:
             st.info("India CPI not available (World Bank API error).")
         else:
-            fig_ind = px.line(ind_df, x="date", y="value", title="India CPI (World Bank annual series)", labels={"value":"CPI (avg)"})
+            fig_ind = px.line(ind_df, x="date", y="value", title="India CPI (World Bank annual series)", labels={"value":"CPI (avg)"}, template=PLOTLY_THEME)
             fig_ind.update_xaxes(rangeslider_visible=True)
             st.plotly_chart(fig_ind, use_container_width=True)
             ind_proj = linear_forecast(ind_df, periods=5, freq='M')
-            st.plotly_chart(px.line(ind_proj, x="date", y="value", color="is_forecast", labels={"value":"CPI"}, title="India CPI + linear forecast (5 periods)"), use_container_width=True)
+            st.plotly_chart(px.line(ind_proj, x="date", y="value", color="is_forecast", labels={"value":"CPI"}, title="India CPI + linear forecast (5 periods)", template=PLOTLY_THEME), use_container_width=True)
 
     st.markdown("### Inflation calculator")
     with st.expander("Calculate future price with constant inflation"):
@@ -258,7 +280,7 @@ with tabs[2]:
         if fed_df.empty:
             st.info("Fed balance sheet not available (FRED key missing).")
         else:
-            fig = px.line(fed_df, x="date", y="value", title="Fed Balance Sheet (WALCL)")
+            fig = px.line(fed_df, x="date", y="value", title="Fed Balance Sheet (WALCL)", template=PLOTLY_THEME)
             fig.update_xaxes(rangeslider_visible=True)
             st.plotly_chart(fig, use_container_width=True)
             st.metric("Latest (WALCL)", f"${fed_df['value'].iloc[-1]:,.0f}")
@@ -282,11 +304,14 @@ with tabs[2]:
                         st.error("After parsing, no valid date/value rows found.")
                     else:
                         uploaded_df = df.copy()
-                        st.line_chart(df.set_index("date"))
+                        # Use a dark theme compatible chart
+                        fig_uploaded = px.line(df, x="date", y="value", template=PLOTLY_THEME)
+                        st.plotly_chart(fig_uploaded, use_container_width=True)
+
                         st.metric("Latest India Liquidity", f"{df['value'].iloc[-1]:,.2f}")
                         st.download_button("Download uploaded CSV", data=df_to_csv_bytes(df), file_name="india_liquidity_uploaded.csv", mime="text/csv")
                         proj = linear_forecast(df, periods=12, freq='M')
-                        st.plotly_chart(px.line(proj, x="date", y="value", color="is_forecast", labels={"value":"Liquidity"}, title="India Liquidity + forecast"), use_container_width=True)
+                        st.plotly_chart(px.line(proj, x="date", y="value", color="is_forecast", labels={"value":"Liquidity"}, title="India Liquidity + forecast", template=PLOTLY_THEME), use_container_width=True)
             except Exception as e:
                 st.error(f"CSV parsing error: {e}")
         else:
@@ -323,6 +348,8 @@ with tabs[3]:
 
         # compute risk score
         risk_score = eq * 0.7 + gold * 0.2 + debt * 0.1
+        
+        # Use a dark-mode friendly gauge
         fig = go.Figure(go.Indicator(
             mode="gauge+number",
             value=risk_score,
@@ -330,14 +357,17 @@ with tabs[3]:
             gauge={
                 "axis": {"range": [0, 100]},
                 "steps": [
-                    {"range": [0, 30], "color": "lightgreen"},
-                    {"range": [30, 60], "color": "yellow"},
+                    {"range": [0, 30], "color": "darkgreen"},
+                    {"range": [30, 60], "color": "orange"},
                     {"range": [60, 100], "color": "red"}
                 ],
-                "bar": {"color": "darkblue"},
-                "threshold": {"value": risk_score, "line": {"color": "red", "width": 4}}
+                "bar": {"color": PRIMARY},
+                "threshold": {"value": risk_score, "line": {"color": "white", "width": 4}}
             }
         ))
+        # Ensure Plotly layout respects dark theme background
+        fig.update_layout(template=PLOTLY_THEME, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
+        
         st.plotly_chart(fig, use_container_width=True)
         if risk_score < 30:
             st.success(f"Score: {risk_score:.1f} → LOW RISK")
@@ -388,7 +418,7 @@ with tabs[4]:
             st.dataframe(merged.tail(10))
             if merged.shape[1] > 1:
                 corr = merged.corr()
-                fig = px.imshow(corr, text_auto=True, aspect="auto", title='Correlation Heatmap')
+                fig = px.imshow(corr, text_auto=True, aspect="auto", title='Correlation Heatmap', template=PLOTLY_THEME, color_continuous_scale="RdBu_r")
                 st.plotly_chart(fig, use_container_width=True)
             else:
                 st.info("Upload at least 2 series to compute correlation.")
@@ -400,7 +430,7 @@ with tabs[4]:
                     pf = linear_forecast(s, periods=forecast_horizon)
                     pf = pf.set_index('date')['value'].rename(col)
                     combined = combined.join(pf, how='outer')
-            st.line_chart(combined)
+            st.line_chart(combined, use_container_width=True) # Use Streamlit's native chart for forecast
             st.download_button("Download merged dataset (CSV)", data=df_to_csv_bytes(merged.reset_index()), file_name="merged_timeseries.csv")
     else:
         st.info("No files uploaded. Try uploading CSVs of liquidity, rates, or other macro series.")
@@ -435,7 +465,7 @@ with tabs[5]:
             y = st.number_input(f"{t} yield (%)", value=7.0, key=f"y_{t}")
             yields.append(y)
     if st.button("Plot yield curve"):
-        fig = px.line(x=tenor_default, y=yields, markers=True, title="India Government Bond Yield Curve (manual)")
+        fig = px.line(x=tenor_default, y=yields, markers=True, title="India Government Bond Yield Curve (manual)", template=PLOTLY_THEME)
         fig.update_yaxes(title_text="Yield (%)")
         st.plotly_chart(fig, use_container_width=True)
 
@@ -473,29 +503,18 @@ with tabs[6]:
     st.download_button("Download Summary Report", "\n".join(lines).encode(), "dashboard_summary.txt")
 
 # -------------------------------------------------------------------
-# ------------------ PRO VISUALS TAB (3D + Theme Buttons) -----------
+# ------------------ PRO VISUALS TAB (3D + Dark Styling) ------------
 # -------------------------------------------------------------------
 with tabs[7]:
-    # We'll scope the Pro CSS inside a container div with id to avoid interfering with other tabs
+    # Hardcode the dark theme variables for the scoped container look
+    PRO_TEXT_COLOR = "#e6edf3"
+    PRO_CARD_BG = "rgba(255,255,255,0.03)" # Semi-transparent light on dark background
+
+    # We'll scope the Pro CSS inside a container div with id
     st.markdown("<div id='pro-container'>", unsafe_allow_html=True)
-
-    # Initialize pro-theme state
-    if "pro_theme" not in st.session_state:
-        st.session_state.pro_theme = "Pro Dark"
-
-    # Top row: title + two-button theme selector
-    c1, c2 = st.columns([3, 1])
-    with c1:
-        st.markdown("<h2 style='margin:0; padding:0;'>🏦 Pro Visuals — 3D Charts & Theme</h2>", unsafe_allow_html=True)
-    with c2:
-        # Two-button theme selector (Option 2)
-        btn_col1, btn_col2 = st.columns(2)
-        with btn_col1:
-            if st.button("Pro Dark"):
-                st.session_state.pro_theme = "Pro Dark"
-        with btn_col2:
-            if st.button("Pro Light"):
-                st.session_state.pro_theme = "Pro Light"
+    
+    # Top row: title
+    st.markdown("<h2 style='margin:0; padding:0; color:#4793ff;'>🏦 Pro Visuals — 3D Charts (Dark Theme)</h2>", unsafe_allow_html=True)
 
     # Scoped Pro CSS (only styles inside #pro-container)
     pro_css = f"""
@@ -503,9 +522,10 @@ with tabs[7]:
     /* scope everything to #pro-container to avoid affecting other tabs */
     #pro-container {{
         padding: 8px 4px 24px 4px;
+        color: {PRO_TEXT_COLOR};
     }}
     #pro-container .pro-navbar {{
-        background: {'rgba(255,255,255,0.03)' if st.session_state.pro_theme=='Pro Dark' else 'rgba(255,255,255,0.92)'} ;
+        background: {PRO_CARD_BG} ;
         backdrop-filter: blur(8px);
         padding: 12px;
         border-radius: 12px;
@@ -514,21 +534,20 @@ with tabs[7]:
         border: 1px solid rgba(255,255,255,0.04);
     }}
     #pro-container .pro-title {{
-        color: {'#60a5fa' if st.session_state.pro_theme=='Pro Dark' else '#0b63a8'};
+        color: #60a5fa;
         font-weight:600;
         font-size:18px;
     }}
     #pro-container .pro-card {{
-        background: {'rgba(255,255,255,0.03)' if st.session_state.pro_theme=='Pro Dark' else 'rgba(10,24,44,0.02)'};
+        background: {PRO_CARD_BG};
         border-radius:12px;
         padding:14px;
         border: 1px solid rgba(255,255,255,0.03);
         margin-bottom:12px;
     }}
-    /* plot backgrounds: keep transparent so charts respect theme */
-    #pro-container .js-plotly-plot .plotly .main-svg {{ background-color: transparent !important; }}
-    /* data table style */
-    #pro-container .stDataFrame table {{ background-color: {'rgba(255,255,255,0.02)' if st.session_state.pro_theme=='Pro Dark' else 'rgba(255,255,255,0.85)'} !important; }}
+    #pro-container h3 {{ color: {PRO_TEXT_COLOR}; }}
+    /* data table style for the pro container */
+    #pro-container .stDataFrame table {{ background-color: rgba(255,255,255,0.02) !important; }}
     </style>
     """
     st.markdown(pro_css, unsafe_allow_html=True)
@@ -536,14 +555,13 @@ with tabs[7]:
     # Pro navbar (visual only inside the tab)
     navbar_html = f"""
     <div class="pro-navbar">
-      <div class="pro-title">Pro Visuals • Theme: {st.session_state.pro_theme}</div>
-      <div style="color: {'#e6edf3' if st.session_state.pro_theme=='Pro Dark' else '#071026'}; font-size:13px;">3D scatter • 3D surface • Export</div>
+      <div class="pro-title">Pro Visuals • Theme: Dark Mode</div>
+      <div style="color: {PRO_TEXT_COLOR}; font-size:13px;">3D scatter • 3D surface • Export</div>
     </div>
     """
     st.markdown(navbar_html, unsafe_allow_html=True)
 
     # ---------- Pro data (dummy or derived) ----------
-    # You can replace these with real data if available (get_fred / india_cpi)
     def generate_series_pro(name, start="2016-01-01", end=datetime.today(), freq="D"):
         dates = pd.date_range(start, end, freq=freq)
         rng = np.random.RandomState(abs(hash(name)) % 1234567)
@@ -597,8 +615,8 @@ with tabs[7]:
                                   on="date", how="inner")
         fig_ts = go.Figure()
         fig_ts.add_trace(go.Scatter(x=merged_monthly["date"], y=merged_monthly["liquidity"], mode="lines", name="Liquidity", line=dict(width=2)))
-        fig_ts.add_trace(go.Scatter(x=merged_monthly["date"], y=merged_monthly["inflation"], mode="lines", name="Inflation", line=dict(width=2, dash="dash")))
-        fig_ts.update_layout(height=360, margin=dict(l=10, r=10, t=30, b=10), paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+        fig_ts.add_trace(go.Scatter(x=merged_monthly["date"], y=merged_monthly["inflation"], mode="lines", name="Inflation", line=dict(width=2, dash="dash")))<
+        fig_ts.update_layout(height=360, margin=dict(l=10, r=10, t=30, b=10), template=PLOTLY_THEME, paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
         st.plotly_chart(fig_ts, use_container_width=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
@@ -615,8 +633,8 @@ with tabs[7]:
             y=df3["liquidity"],
             z=df3["inflation"],
             mode='markers+lines',
-            marker=dict(size=4, opacity=0.85),
-            line=dict(width=1),
+            marker=dict(size=4, opacity=0.85, color=PRIMARY),
+            line=dict(width=1, color=PRIMARY),
             text=hover_text,
             hoverinfo='text'
         )])
@@ -632,6 +650,7 @@ with tabs[7]:
             ),
             height=520,
             margin=dict(l=0, r=0, t=10, b=0),
+            template=PLOTLY_THEME,
             paper_bgcolor='rgba(0,0,0,0)',
             plot_bgcolor='rgba(0,0,0,0)'
         )
@@ -657,11 +676,13 @@ with tabs[7]:
         liquidity_interp = np.interp(X[0], x, df_grid["liquidity"].values)
         Z = np.tile(liquidity_interp, (Y.shape[0], 1)) + (np.sin((Y - Y.mean()) / (Y.std() if Y.std()!=0 else 1)) * 2)
 
-        surface = go.Figure(data=[go.Surface(x=X, y=Y, z=Z, colorscale='Viridis', showscale=False, opacity=0.9)])
+        surface = go.Figure(data=[go.Surface(x=X, y=Y, z=Z, colorscale='RdBu', showscale=False, opacity=0.9)])
         surface.update_layout(
             title="3D Surface (toy model): Liquidity over Time × GDP",
             scene=dict(xaxis_title="Time Index", yaxis_title="GDP (synthetic)", zaxis_title="Liquidity"),
-            height=520, margin=dict(l=0, r=0, t=40, b=0), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)'
+            height=520, margin=dict(l=0, r=0, t=40, b=0),
+            template=PLOTLY_THEME,
+            paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)'
         )
         st.plotly_chart(surface, use_container_width=True)
         st.markdown("</div>", unsafe_allow_html=True)
@@ -675,7 +696,7 @@ with tabs[7]:
         pro_gdp_m.rename(columns={"value": "gdp"}).set_index("date")["gdp"]
     ], axis=1).dropna()
     corr = pro_corr.corr()
-    fig_corr = px.imshow(corr, text_auto=True, aspect="auto", color_continuous_scale="RdBu_r")
+    fig_corr = px.imshow(corr, text_auto=True, aspect="auto", color_continuous_scale="RdBu_r", template=PLOTLY_THEME)
     fig_corr.update_layout(height=280, margin=dict(l=10, r=10, t=10, b=10), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
     st.plotly_chart(fig_corr, use_container_width=True)
     st.markdown("<hr>", unsafe_allow_html=True)
@@ -696,6 +717,6 @@ with tabs[7]:
 # Footer common to app
 # ------------------------------------------------------------
 st.markdown(
-    "<p style='text-align:center; color:#475569; margin-top:30px;'>Made with ❤️ — RBI Macro Dashboard v2.0 • Pro Visuals included</p>",
+    "<p style='text-align:center; color:#94a3b8; margin-top:30px;'>Made with ❤️ — RBI Macro Dashboard v2.0 • Dark Mode Enabled</p>",
     unsafe_allow_html=True
 )
