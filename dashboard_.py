@@ -11,7 +11,7 @@ import zipfile
 # ------------------------------------------------------------
 # PAGE CONFIG (single)
 # ------------------------------------------------------------
-st.set_page_config(page_title="RBI Macro Dashboard v2.0 — Light Mode", layout="wide",
+st.set_page_config(page_title="RBI Macro Dashboard v2.0 — Dark Mode", layout="wide",
                    page_icon="🏦", initial_sidebar_state="collapsed")
 
 # ------------------------------------------------------------
@@ -121,16 +121,16 @@ def safe_latest(df, fmt="0.2f"):
         return "N/A"
 
 # ------------------------------------------------------------
-# LIGHT THEME GLOBAL STYLES (RBI-inspired colors - Soft Blue BG)
+# DARK THEME GLOBAL STYLES (Non-Black Background)
 # ------------------------------------------------------------
-PRIMARY = "#004D99" # Deep RBI Blue for accents/titles
+PRIMARY = "#54A0FF" # Brighter Blue for accent/titles in dark mode
 ACCENT = "#0b84a5"
-BG = "#EBF5FF" # Soft Light Blue Background (New)
-CARD_BG = "white"
-CARD_TEXT = "#1A1A1A" # Near Black text for visibility
-CARD_SUBTITLE = "#545454" # Dark Gray text
-CARD_SHADOW = "0 2px 10px rgba(12, 36, 60, 0.06)" # Light subtle shadow
-PLOTLY_THEME = "plotly_white" # Light theme for Plotly charts
+BG = "#161A22" # Dark Slate Background (New: Not Black)
+CARD_BG = "#1F232B" # Slightly lighter dark card background
+CARD_TEXT = "#E6EDF3" # Light text
+CARD_SUBTITLE = "#94A3B8" # Light Gray subtitle text
+CARD_SHADOW = "0 4px 12px rgba(0, 0, 0, 0.4)" # Subtle shadow for dark mode
+PLOTLY_THEME = "plotly_dark" # Dark theme for Plotly charts
 
 st.markdown(f"""
 <style>
@@ -158,9 +158,9 @@ st.markdown(f"""
         border-radius:12px;
         padding: 14px;
         box-shadow: {CARD_SHADOW};
-        border: 1px solid rgba(0, 0, 0, 0.05); /* subtle light border */
+        border: 1px solid rgba(255, 255, 255, 0.05); /* subtle border */
     }}
-    /* Metric label color fix for light mode */
+    /* Metric label color fix for dark mode (makes the title of the metric readable) */
     [data-testid="stMetricLabel"] {{ color: {CARD_SUBTITLE} !important; }}
     
     /* Plotly and DataFrame background adjustments for transparency */
@@ -306,7 +306,7 @@ with tabs[2]:
                         st.error("After parsing, no valid date/value rows found.")
                     else:
                         uploaded_df = df.copy()
-                        # Use a light theme compatible chart
+                        # Use a dark theme compatible chart
                         fig_uploaded = px.line(df, x="date", y="value", template=PLOTLY_THEME)
                         st.plotly_chart(fig_uploaded, use_container_width=True)
 
@@ -351,7 +351,7 @@ with tabs[3]:
         # compute risk score
         risk_score = eq * 0.7 + gold * 0.2 + debt * 0.1
         
-        # Use a light-mode friendly gauge
+        # Use a dark-mode friendly gauge
         fig = go.Figure(go.Indicator(
             mode="gauge+number",
             value=risk_score,
@@ -359,15 +359,15 @@ with tabs[3]:
             gauge={
                 "axis": {"range": [0, 100]},
                 "steps": [
-                    {"range": [0, 30], "color": "lightgreen"},
-                    {"range": [30, 60], "color": "yellow"},
+                    {"range": [0, 30], "color": "darkgreen"},
+                    {"range": [30, 60], "color": "orange"},
                     {"range": [60, 100], "color": "red"}
                 ],
                 "bar": {"color": PRIMARY},
-                "threshold": {"value": risk_score, "line": {"color": "red", "width": 4}}
+                "threshold": {"value": risk_score, "line": {"color": CARD_TEXT, "width": 4}}
             }
         ))
-        # Ensure Plotly layout respects light theme background
+        # Ensure Plotly layout respects dark theme background
         fig.update_layout(template=PLOTLY_THEME, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
         
         st.plotly_chart(fig, use_container_width=True)
@@ -505,18 +505,18 @@ with tabs[6]:
     st.download_button("Download Summary Report", "\n".join(lines).encode(), "dashboard_summary.txt")
 
 # -------------------------------------------------------------------
-# ------------------ PRO VISUALS TAB (3D + Light Styling) ------------
+# ------------------ PRO VISUALS TAB (3D + Dark Styling) ------------
 # -------------------------------------------------------------------
 with tabs[7]:
-    # Hardcode the light theme variables for the scoped container look
+    # Hardcode the dark theme variables for the scoped container look
     PRO_TEXT_COLOR = CARD_TEXT # Use main text color
-    PRO_CARD_BG = "rgba(255,255,255,0.92)" # Near opaque white on light background
+    PRO_CARD_BG = CARD_BG # Use main card background for consistency
 
     # We'll scope the Pro CSS inside a container div with id
     st.markdown("<div id='pro-container'>", unsafe_allow_html=True)
     
     # Top row: title
-    st.markdown(f"<h2 style='margin:0; padding:0; color:{PRIMARY};'>🏦 Pro Visuals — 3D Charts (Light Theme)</h2>", unsafe_allow_html=True)
+    st.markdown(f"<h2 style='margin:0; padding:0; color:{PRIMARY};'>🏦 Pro Visuals — 3D Charts (Dark Theme)</h2>", unsafe_allow_html=True)
 
     # Scoped Pro CSS (only styles inside #pro-container)
     pro_css = f"""
@@ -533,7 +533,7 @@ with tabs[7]:
         border-radius: 12px;
         display:flex; justify-content:space-between; align-items:center;
         margin-bottom:12px;
-        border: 1px solid rgba(0,0,0,0.08); /* Darker border for contrast */
+        border: 1px solid rgba(255,255,255,0.05); /* Light border for dark contrast */
     }}
     #pro-container .pro-title {{
         color: {PRIMARY};
@@ -544,7 +544,7 @@ with tabs[7]:
         background: {PRO_CARD_BG};
         border-radius:12px;
         padding:14px;
-        border: 1px solid rgba(0,0,0,0.08);
+        border: 1px solid rgba(255,255,255,0.05);
         margin-bottom:12px;
     }}
     #pro-container h3 {{ color: {PRO_TEXT_COLOR}; }}
@@ -557,7 +557,7 @@ with tabs[7]:
     # Pro navbar (visual only inside the tab)
     navbar_html = f"""
     <div class="pro-navbar">
-      <div class="pro-title">Pro Visuals • Theme: Light Mode</div>
+      <div class="pro-title">Pro Visuals • Theme: Dark Mode</div>
       <div style="color: {CARD_SUBTITLE}; font-size:13px;">3D scatter • 3D surface • Export</div>
     </div>
     """
