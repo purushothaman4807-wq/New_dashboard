@@ -11,7 +11,7 @@ import zipfile
 # ------------------------------------------------------------
 # PAGE CONFIG (single)
 # ------------------------------------------------------------
-st.set_page_config(page_title="RBI Macro Dashboard v2.0 — Dark Mode", layout="wide",
+st.set_page_config(page_title="RBI Macro Dashboard — Dark Mode", layout="wide",
                    page_icon="🏦", initial_sidebar_state="collapsed")
 
 # ------------------------------------------------------------
@@ -169,8 +169,8 @@ st.markdown(f"""
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown("<div class='big-title'>🏦 RBI Macro Economic Dashboard — v2.0</div>", unsafe_allow_html=True)
-st.markdown("<div class='subtitle'>Inflation • Liquidity • Monetary Policy • Forecasts • Exports — polished for RBI application</div>", unsafe_allow_html=True)
+st.markdown("<div class='big-title'>🇮🇳 RBI Macroeconomic Application Dashboard</div>", unsafe_allow_html=True)
+st.markdown("<div class='subtitle'>Monetary Policy Analysis • Inflation • Liquidity • Risk Metrics • Forecasting</div>", unsafe_allow_html=True)
 
 # ------------------------------------------------------------
 # TABS: original 7 + new Pro visuals tab (index 7)
